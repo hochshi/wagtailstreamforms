@@ -47,7 +47,7 @@ class FormBuilder:
                 )
 
             # slugify the label for the field name
-            field_name = get_slug_from_string(field_value.get('label'))
+            field_name = get_slug_from_string(field_value.get('name'))
 
             # get the field
             registered_cls = registered_fields[field_type]()

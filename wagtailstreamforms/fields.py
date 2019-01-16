@@ -1,5 +1,5 @@
 from django import forms
-from django.core import exceptions
+from django.core import exceptions, validators
 from django.db import models
 from django.utils.text import capfirst
 
@@ -65,7 +65,9 @@ class BaseField:
     field_class = None
     widget = None
     icon = 'placeholder'
+    name = None
     label = None
+    pattern = None
 
     def get_formfield(self, block_value):
         """
@@ -83,7 +85,16 @@ class BaseField:
         if self.widget:
             return self.field_class(widget=self.widget, **options)
 
-        return self.field_class(**options)
+        pattern = self.get_pattern(block_value)
+        if pattern:
+            regex_validator = validators.RegexValidator(regex=pattern['pattern'])
+            options.update({'validators': [regex_validator]})
+            field = self.field_class(**options)
+            field.widget.attrs.update(self.get_pattern(block_value))
+        else:
+            field = self.field_class(**options)
+
+        return field
 
     def get_options(self, block_value):
         """The field options.
@@ -98,8 +109,16 @@ class BaseField:
             'label': block_value.get('label'),
             'help_text': block_value.get('help_text'),
             'required': block_value.get('required'),
-            'initial': block_value.get('default_value')
+            'initial': block_value.get('default_value'),
         }
+
+    def get_pattern(self, block_value):
+        pattern = block_value.get('pattern')
+        if pattern:
+            return {
+                'pattern': block_value.get('pattern')
+            }
+        return None
 
     def get_form_block(self):
         """The StreamField StructBlock.
@@ -109,10 +128,12 @@ class BaseField:
         :return: The ``wagtail.core.blocks.StructBlock`` to be used in the StreamField
         """
         return blocks.StructBlock([
+            ('name', blocks.CharBlock()),
             ('label', blocks.CharBlock()),
             ('help_text', blocks.CharBlock(required=False)),
             ('required', blocks.BooleanBlock(required=False)),
             ('default_value', blocks.CharBlock(required=False)),
+            ('pattern', blocks.CharBlock(required=False)),
         ], icon=self.icon, label=self.label)
 
 
