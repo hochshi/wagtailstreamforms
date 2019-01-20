@@ -16,6 +16,9 @@ class BaseForm(forms.Form):
 
         super().__init__(*args, **kwargs)
 
+    def get_command_line_options(self):
+        return [(key, getattr(field, 'clo', False)) for key, field in self.fields.items()]
+
 
 class FormBuilder:
 

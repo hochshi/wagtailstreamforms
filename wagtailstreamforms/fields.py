@@ -68,6 +68,7 @@ class BaseField:
     name = None
     label = None
     pattern = None
+    clo = False
 
     def get_formfield(self, block_value):
         """
@@ -94,6 +95,7 @@ class BaseField:
         else:
             field = self.field_class(**options)
 
+        field.clo = block_value.get('command_line_option', False)
         return field
 
     def get_options(self, block_value):
@@ -129,6 +131,7 @@ class BaseField:
         """
         return blocks.StructBlock([
             ('name', blocks.CharBlock()),
+            ('command_line_option', blocks.BooleanBlock(required=False)),
             ('label', blocks.CharBlock()),
             ('help_text', blocks.CharBlock(required=False)),
             ('required', blocks.BooleanBlock(required=False)),

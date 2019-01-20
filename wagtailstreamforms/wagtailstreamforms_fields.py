@@ -61,7 +61,9 @@ class EmailField(BaseField):
             white_list = self.get_white_list().load().list_domains
             email_validator = validators.EmailDomainWhiteListValidator(whitelist=white_list)
             options.update({'validators': [email_validator]})
-        return self.field_class(**options)
+        field = self.field_class(**options)
+        field.clo = block_value.get('command_line_option', False)
+        return field
 
 
     def is_white_list_enabled(self, block_value):
@@ -77,6 +79,7 @@ class EmailField(BaseField):
         """
         return blocks.StructBlock([
             ('name', blocks.CharBlock()),
+            ('command_line_option', blocks.BooleanBlock(required=False)),
             ('label', blocks.CharBlock()),
             ('help_text', blocks.CharBlock(required=False)),
             ('required', blocks.BooleanBlock(required=False)),
@@ -109,6 +112,7 @@ class NumberField(BaseField):
         """
         return blocks.StructBlock([
             ('name', blocks.CharBlock()),
+            ('command_line_option', blocks.BooleanBlock(required=False)),
             ('label', blocks.CharBlock()),
             ('help_text', blocks.CharBlock(required=False)),
             ('required', blocks.BooleanBlock(required=False)),
@@ -133,6 +137,7 @@ class DropdownField(BaseField):
     def get_form_block(self):
         return blocks.StructBlock([
             ('name', blocks.CharBlock()),
+            ('command_line_option', blocks.BooleanBlock(required=False)),
             ('label', blocks.CharBlock()),
             ('help_text', blocks.CharBlock(required=False)),
             ('required', blocks.BooleanBlock(required=False)),
@@ -157,6 +162,7 @@ class MultiSelectField(BaseField):
     def get_form_block(self):
         return blocks.StructBlock([
             ('name', blocks.CharBlock()),
+            ('command_line_option', blocks.BooleanBlock(required=False)),
             ('label', blocks.CharBlock()),
             ('help_text', blocks.CharBlock(required=False)),
             ('required', blocks.BooleanBlock(required=False)),
@@ -181,6 +187,7 @@ class RadioField(BaseField):
     def get_form_block(self):
         return blocks.StructBlock([
             ('name', blocks.CharBlock()),
+            ('command_line_option', blocks.BooleanBlock(required=False)),
             ('label', blocks.CharBlock()),
             ('help_text', blocks.CharBlock(required=False)),
             ('required', blocks.BooleanBlock(required=False)),
@@ -205,6 +212,7 @@ class CheckboxesField(BaseField):
     def get_form_block(self):
         return blocks.StructBlock([
             ('name', blocks.CharBlock()),
+            ('command_line_option', blocks.BooleanBlock(required=False)),
             ('label', blocks.CharBlock()),
             ('help_text', blocks.CharBlock(required=False)),
             ('required', blocks.BooleanBlock(required=False)),
@@ -222,6 +230,7 @@ class CheckboxField(BaseField):
     def get_form_block(self):
         return blocks.StructBlock([
             ('name', blocks.CharBlock()),
+            ('command_line_option', blocks.BooleanBlock(required=False)),
             ('label', blocks.CharBlock()),
             ('help_text', blocks.CharBlock(required=False)),
             ('required', blocks.BooleanBlock(required=False)),
@@ -247,6 +256,7 @@ class SingleFileField(BaseField):
     def get_form_block(self):
         return blocks.StructBlock([
             ('name', blocks.CharBlock()),
+            ('command_line_option', blocks.BooleanBlock(required=False)),
             ('label', blocks.CharBlock()),
             ('help_text', blocks.CharBlock(required=False)),
             ('required', blocks.BooleanBlock(required=False)),
@@ -264,6 +274,7 @@ class MultiFileField(BaseField):
     def get_form_block(self):
         return blocks.StructBlock([
             ('name', blocks.CharBlock()),
+            ('command_line_option', blocks.BooleanBlock(required=False)),
             ('label', blocks.CharBlock()),
             ('help_text', blocks.CharBlock(required=False)),
             ('required', blocks.BooleanBlock(required=False)),
