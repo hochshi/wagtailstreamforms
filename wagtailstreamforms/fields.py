@@ -84,7 +84,7 @@ class BaseField:
         options = self.get_options(block_value)
 
         if self.widget:
-            return self.field_class(widget=self.widget, **options)
+            options['widget'] = self.widget
 
         pattern = self.get_pattern(block_value)
         if pattern:
