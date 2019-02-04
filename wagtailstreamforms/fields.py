@@ -12,6 +12,19 @@ from wagtailstreamforms.utils.apps import get_app_submodules
 _fields = {}
 _searched_for_fields = False
 
+FIELD_FORM_BLOCK = [
+            ('name', blocks.CharBlock()),
+            ('command_line_option', blocks.BooleanBlock(required=False)),
+            ('label', blocks.CharBlock()),
+            ('help_text', blocks.CharBlock(required=False)),
+            ('required', blocks.BooleanBlock(required=False)),
+            ('default_value', blocks.CharBlock(required=False)),
+            ('validation', blocks.StructBlock([
+                ('regex', blocks.CharBlock(required=False)),
+                ('error_message', blocks.CharBlock(required=False)),
+            ]))
+        ]
+
 
 def register(field_name, cls=None):
     """
@@ -83,17 +96,19 @@ class BaseField:
 
         options = self.get_options(block_value)
 
-        if self.widget:
-            options['widget'] = self.widget
+        # if self.widget:
+        #     options['widget'] = self.widget
 
-        pattern = self.get_pattern(block_value)
-        if pattern:
-            regex_validator = validators.RegexValidator(regex=pattern['pattern'])
-            options.update({'validators': [regex_validator]})
-            field = self.field_class(**options)
-            field.widget.attrs.update(self.get_pattern(block_value))
-        else:
-            field = self.field_class(**options)
+        # validation = self.get_pattern(block_value)
+        # if validation and validation['regex']:
+        #     regex_validator = validators.RegexValidator(regex=validation['regex'], message=validation['regex'])
+        #     options.update({'validators': [regex_validator]})
+        #     field = self.field_class(**options)
+        #     field.widget.attrs.update({
+        #         'pattern': validation['regex']
+        #     })
+        # else:
+        field = self.field_class(**options)
 
         field.clo = block_value.get('command_line_option', False)
         return field
@@ -107,18 +122,37 @@ class BaseField:
         :return: The options to be passed into the field, ie ``django.forms.CharField(**options)``
         """
 
-        return {
+        options = {
             'label': block_value.get('label'),
             'help_text': block_value.get('help_text'),
             'required': block_value.get('required'),
             'initial': block_value.get('default_value'),
         }
 
+        widget = self.field_class.widget
+        widget_attrs = {}
+        if self.widget:
+            widget = self.widget
+
+
+        validation = self.get_pattern(block_value)
+        if validation and validation['regex']:
+            regex_validator = validators.RegexValidator(regex=validation['regex'], message=validation['msg'])
+            options.update({'validators': [regex_validator]})
+            widget_attrs.update({
+                'pattern': validation['regex']
+            })
+
+        options['widget'] = widget(attrs=widget_attrs)
+
+        return options
+
     def get_pattern(self, block_value):
-        pattern = block_value.get('pattern')
-        if pattern:
+        validation = block_value.get('validation')
+        if validation:
             return {
-                'pattern': block_value.get('pattern')
+                'regex': validation.get('regex', None),
+                'msg': validation.get('error_message', None),
             }
         return None
 
@@ -129,15 +163,7 @@ class BaseField:
 
         :return: The ``wagtail.core.blocks.StructBlock`` to be used in the StreamField
         """
-        return blocks.StructBlock([
-            ('name', blocks.CharBlock()),
-            ('command_line_option', blocks.BooleanBlock(required=False)),
-            ('label', blocks.CharBlock()),
-            ('help_text', blocks.CharBlock(required=False)),
-            ('required', blocks.BooleanBlock(required=False)),
-            ('default_value', blocks.CharBlock(required=False)),
-            ('pattern', blocks.CharBlock(required=False)),
-        ], icon=self.icon, label=self.label)
+        return blocks.StructBlock(FIELD_FORM_BLOCK, icon=self.icon, label=self.label)
 
 
 class HookMultiSelectFormField(forms.MultipleChoiceField):

@@ -3,7 +3,7 @@ from django.utils.translation import ugettext_lazy as _
 from wagtail.core import blocks
 from wagtailstreamforms import validators
 
-from wagtailstreamforms.fields import BaseField, register
+from wagtailstreamforms.fields import BaseField, register, FIELD_FORM_BLOCK
 from wagtail.core.utils import resolve_model_string
 
 
@@ -54,13 +54,13 @@ class EmailField(BaseField):
 
         options = self.get_options(block_value)
 
-        if self.widget:
-            return self.field_class(widget=self.widget, **options)
-
         if self.is_white_list_enabled(block_value):
             white_list = self.get_white_list().load().list_domains
             email_validator = validators.EmailDomainWhiteListValidator(whitelist=white_list)
-            options.update({'validators': [email_validator]})
+            try:
+                options['validators'].append(email_validator)
+            except KeyError as e:
+                options.update({'validators': [email_validator]})
         field = self.field_class(**options)
         field.clo = block_value.get('command_line_option', False)
         return field
@@ -77,13 +77,7 @@ class EmailField(BaseField):
 
         :return: The ``wagtail.core.blocks.StructBlock`` to be used in the StreamField
         """
-        return blocks.StructBlock([
-            ('name', blocks.CharBlock()),
-            ('command_line_option', blocks.BooleanBlock(required=False)),
-            ('label', blocks.CharBlock()),
-            ('help_text', blocks.CharBlock(required=False)),
-            ('required', blocks.BooleanBlock(required=False)),
-            ('default_value', blocks.CharBlock(required=False)),
+        return blocks.StructBlock(FIELD_FORM_BLOCK + [
             ('filter_domains', blocks.BooleanBlock(required=False, help_text='Allow only white list email domains')),
         ], icon=self.icon, label=self.label)
 
@@ -135,13 +129,7 @@ class DropdownField(BaseField):
         return options
 
     def get_form_block(self):
-        return blocks.StructBlock([
-            ('name', blocks.CharBlock()),
-            ('command_line_option', blocks.BooleanBlock(required=False)),
-            ('label', blocks.CharBlock()),
-            ('help_text', blocks.CharBlock(required=False)),
-            ('required', blocks.BooleanBlock(required=False)),
-            ('pattern', blocks.CharBlock(required=False)),
+        return blocks.StructBlock(FIELD_FORM_BLOCK + [
             ('empty_label', blocks.CharBlock(required=False)),
             ('choices', blocks.ListBlock(blocks.CharBlock(label="Option"))),
         ], icon=self.icon, label=self.label)
@@ -160,13 +148,7 @@ class MultiSelectField(BaseField):
         return options
 
     def get_form_block(self):
-        return blocks.StructBlock([
-            ('name', blocks.CharBlock()),
-            ('command_line_option', blocks.BooleanBlock(required=False)),
-            ('label', blocks.CharBlock()),
-            ('help_text', blocks.CharBlock(required=False)),
-            ('required', blocks.BooleanBlock(required=False)),
-            ('pattern', blocks.CharBlock(required=False)),
+        return blocks.StructBlock(FIELD_FORM_BLOCK + [
             ('choices', blocks.ListBlock(blocks.CharBlock(label="Option"))),
         ], icon=self.icon, label=self.label)
 
@@ -185,13 +167,7 @@ class RadioField(BaseField):
         return options
 
     def get_form_block(self):
-        return blocks.StructBlock([
-            ('name', blocks.CharBlock()),
-            ('command_line_option', blocks.BooleanBlock(required=False)),
-            ('label', blocks.CharBlock()),
-            ('help_text', blocks.CharBlock(required=False)),
-            ('required', blocks.BooleanBlock(required=False)),
-            ('pattern', blocks.CharBlock(required=False)),
+        return blocks.StructBlock(FIELD_FORM_BLOCK + [
             ('choices', blocks.ListBlock(blocks.CharBlock(label="Option")))
         ], icon=self.icon, label=self.label)
 
@@ -210,13 +186,7 @@ class CheckboxesField(BaseField):
         return options
 
     def get_form_block(self):
-        return blocks.StructBlock([
-            ('name', blocks.CharBlock()),
-            ('command_line_option', blocks.BooleanBlock(required=False)),
-            ('label', blocks.CharBlock()),
-            ('help_text', blocks.CharBlock(required=False)),
-            ('required', blocks.BooleanBlock(required=False)),
-            ('pattern', blocks.CharBlock(required=False)),
+        return blocks.StructBlock(FIELD_FORM_BLOCK + [
             ('choices', blocks.ListBlock(blocks.CharBlock(label="Option"))),
         ], icon=self.icon, label=self.label)
 
@@ -228,14 +198,7 @@ class CheckboxField(BaseField):
     label = _("Checkbox field")
 
     def get_form_block(self):
-        return blocks.StructBlock([
-            ('name', blocks.CharBlock()),
-            ('command_line_option', blocks.BooleanBlock(required=False)),
-            ('label', blocks.CharBlock()),
-            ('help_text', blocks.CharBlock(required=False)),
-            ('required', blocks.BooleanBlock(required=False)),
-            ('pattern', blocks.CharBlock(required=False)),
-        ], icon=self.icon, label=self.label)
+        return blocks.StructBlock(FIELD_FORM_BLOCK, icon=self.icon, label=self.label)
 
 
 @register('hidden')
@@ -254,29 +217,22 @@ class SingleFileField(BaseField):
     label = _("File field")
 
     def get_form_block(self):
-        return blocks.StructBlock([
-            ('name', blocks.CharBlock()),
-            ('command_line_option', blocks.BooleanBlock(required=False)),
-            ('label', blocks.CharBlock()),
-            ('help_text', blocks.CharBlock(required=False)),
-            ('required', blocks.BooleanBlock(required=False)),
-            ('pattern', blocks.CharBlock(required=False)),
-        ], icon=self.icon, label=self.label)
+        return blocks.StructBlock(FIELD_FORM_BLOCK, icon=self.icon, label=self.label)
 
 
-@register('multifile')
-class MultiFileField(BaseField):
-    field_class = forms.FileField
-    widget = forms.widgets.FileInput(attrs={'multiple': True})
-    icon = 'doc-full-inverse'
-    label = _("Files field")
-
-    def get_form_block(self):
-        return blocks.StructBlock([
-            ('name', blocks.CharBlock()),
-            ('command_line_option', blocks.BooleanBlock(required=False)),
-            ('label', blocks.CharBlock()),
-            ('help_text', blocks.CharBlock(required=False)),
-            ('required', blocks.BooleanBlock(required=False)),
-            ('pattern', blocks.CharBlock(required=False)),
-        ], icon=self.icon, label=self.label)
+# @register('multifile')
+# class MultiFileField(BaseField):
+#     field_class = forms.FileField
+#     widget = forms.widgets.FileInput(attrs={'multiple': True})
+#     icon = 'doc-full-inverse'
+#     label = _("Files field")
+#
+#     def get_form_block(self):
+#         return blocks.StructBlock([
+#             ('name', blocks.CharBlock()),
+#             ('command_line_option', blocks.BooleanBlock(required=False)),
+#             ('label', blocks.CharBlock()),
+#             ('help_text', blocks.CharBlock(required=False)),
+#             ('required', blocks.BooleanBlock(required=False)),
+#             ('pattern', blocks.CharBlock(required=False)),
+#         ], icon=self.icon, label=self.label)
