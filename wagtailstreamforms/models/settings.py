@@ -11,7 +11,7 @@ class DomainWhiteListSettings(BaseSetting):
     Domain white list.
     """
 
-    __instance = None
+    # __instance = None
 
     class Meta:
         verbose_name = _('Email White list')
@@ -36,8 +36,10 @@ class DomainWhiteListSettings(BaseSetting):
 
     @classmethod
     def load(cls):
-        if not DomainWhiteListSettings.__instance:
-            obj, created = cls.objects.get_or_create(pk=1)
-            DomainWhiteListSettings.__instance = obj
-        return DomainWhiteListSettings.__instance
+        obj, created = cls.objects.get_or_create(pk=1)
+        return obj
+        # if not DomainWhiteListSettings.__instance:
+        #     obj, created = cls.objects.get_or_create(pk=1)
+        #     DomainWhiteListSettings.__instance = obj
+        # return DomainWhiteListSettings.__instance
 
