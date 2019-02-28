@@ -19,10 +19,12 @@ FIELD_FORM_BLOCK = [
             ('help_text', blocks.CharBlock(required=False)),
             ('required', blocks.BooleanBlock(required=False)),
             ('default_value', blocks.CharBlock(required=False)),
-            ('validation', blocks.StructBlock([
-                ('regex', blocks.CharBlock(required=False)),
-                ('error_message', blocks.CharBlock(required=False)),
-            ]))
+            ('validation', blocks.ListBlock(
+                blocks.StructBlock([
+                    ('regex', blocks.CharBlock(required=False)),
+                    ('error_message', blocks.CharBlock(required=False)),
+                ])
+            )),
         ]
 
 
@@ -134,26 +136,28 @@ class BaseField:
         if self.widget:
             widget = self.widget
 
-
-        validation = self.get_pattern(block_value)
-        if validation and validation['regex']:
-            regex_validator = validators.RegexValidator(regex=validation['regex'], message=validation['msg'])
-            options.update({'validators': [regex_validator]})
-            widget_attrs.update({
-                'pattern': validation['regex']
-            })
+        validation_list = self.get_pattern(block_value)
+        validations = []
+        for validation in validation_list:
+            if validation['regex']:
+                regex_validator = validators.RegexValidator(regex=validation['regex'], message=validation['msg'])
+                validations.append(regex_validator)
+                options.update({'validators': validations})
+                widget_attrs.update({
+                    'pattern': validation['regex']
+                })
 
         options['widget'] = widget(attrs=widget_attrs)
 
         return options
 
     def get_pattern(self, block_value):
-        validation = block_value.get('validation')
-        if validation:
-            return {
+        validation_list = block_value.get('validation')
+        if validation_list:
+            return [{
                 'regex': validation.get('regex', None),
                 'msg': validation.get('error_message', None),
-            }
+            } for validation in validation_list]
         return None
 
     def get_form_block(self):
