@@ -8,6 +8,11 @@ from wagtail.core import blocks
 from wagtailstreamforms import hooks
 from wagtailstreamforms.utils.apps import get_app_submodules
 
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 
 _fields = {}
 _searched_for_fields = False
@@ -138,14 +143,17 @@ class BaseField:
 
         validation_list = self.get_pattern(block_value)
         validations = []
-        for validation in validation_list:
-            if validation['regex']:
-                regex_validator = validators.RegexValidator(regex=validation['regex'], message=validation['msg'])
-                validations.append(regex_validator)
-                options.update({'validators': validations})
-                widget_attrs.update({
-                    'pattern': validation['regex']
-                })
+        try:
+            for validation in validation_list:
+                if validation['regex']:
+                    regex_validator = validators.RegexValidator(regex=validation['regex'], message=validation['msg'])
+                    validations.append(regex_validator)
+                    options.update({'validators': validations})
+                    widget_attrs.update({
+                        'pattern': validation['regex']
+                    })
+        except TypeError as e:
+            logger.error('validation_list is none, %s'.format(e))
 
         options['widget'] = widget(attrs=widget_attrs)
 
