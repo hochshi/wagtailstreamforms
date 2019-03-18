@@ -3,7 +3,7 @@ from django.utils.translation import ugettext_lazy as _
 from wagtail.core import blocks
 from wagtailstreamforms import validators
 
-from wagtailstreamforms.fields import BaseField, register, FIELD_FORM_BLOCK
+from wagtailstreamforms.fields import BaseField, register, FIELD_FORM_BLOCK, FILE_FORM_BLOCK
 from wagtail.core.utils import resolve_model_string
 
 
@@ -217,22 +217,17 @@ class SingleFileField(BaseField):
     label = _("File field")
 
     def get_form_block(self):
-        return blocks.StructBlock(FIELD_FORM_BLOCK, icon=self.icon, label=self.label)
+        return blocks.StructBlock(FILE_FORM_BLOCK, icon=self.icon, label=self.label)
+    
+    def get_options(self, block_value):
+        options = super(SingleFileField, self).get_options(block_value)
+        max_size = block_value.get('max_size', 0)
+        validate_content_type = block_value.get('validate_content_is_text', False)
+        f_val = []
+        if max_size > 0:
+            f_val.append(validators.FileSizeValidator(max_size))
+        if validate_content_type:
+            f_val.append((validators.FileTypeValidator(allowed_types=['text/plain'])))
+        options['validators'] = f_val
 
-
-# @register('multifile')
-# class MultiFileField(BaseField):
-#     field_class = forms.FileField
-#     widget = forms.widgets.FileInput(attrs={'multiple': True})
-#     icon = 'doc-full-inverse'
-#     label = _("Files field")
-#
-#     def get_form_block(self):
-#         return blocks.StructBlock([
-#             ('name', blocks.CharBlock()),
-#             ('command_line_option', blocks.BooleanBlock(required=False)),
-#             ('label', blocks.CharBlock()),
-#             ('help_text', blocks.CharBlock(required=False)),
-#             ('required', blocks.BooleanBlock(required=False)),
-#             ('pattern', blocks.CharBlock(required=False)),
-#         ], icon=self.icon, label=self.label)
+        return options

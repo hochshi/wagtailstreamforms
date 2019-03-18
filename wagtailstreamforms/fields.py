@@ -32,6 +32,16 @@ FIELD_FORM_BLOCK = [
             )),
         ]
 
+FILE_FORM_BLOCK = [
+            ('name', blocks.CharBlock()),
+            ('command_line_option', blocks.BooleanBlock(required=False)),
+            ('label', blocks.CharBlock()),
+            ('help_text', blocks.CharBlock(required=False)),
+            ('required', blocks.BooleanBlock(required=False)),
+            ('max_size', blocks.FloatBlock(required=False, help_text='Maximum file size in MiB (mega bytes)')),
+            ('validate_content_is_text', blocks.BooleanBlock(required=False)),
+        ]
+
 
 def register(field_name, cls=None):
     """
@@ -160,13 +170,13 @@ class BaseField:
         return options
 
     def get_pattern(self, block_value):
-        validation_list = block_value.get('validation')
+        validation_list = block_value.get('validation', None)
         if validation_list:
             return [{
                 'regex': validation.get('regex', None),
                 'msg': validation.get('error_message', None),
             } for validation in validation_list]
-        return None
+        return []
 
     def get_form_block(self):
         """The StreamField StructBlock.
