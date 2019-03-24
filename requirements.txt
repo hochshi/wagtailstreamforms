@@ -4,7 +4,7 @@
 Django>=1.11,<2.2
 mock
 psycopg2-binary
-filemagic
+file-magic
 
 # example site
 django-recaptcha

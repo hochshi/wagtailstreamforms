@@ -31,7 +31,9 @@ class FileTypeValidator(object):
         self.allowed_exts = allowed_extensions
 
     def __call__(self, fileobj):
-        detected_type = magic.from_buffer(fileobj.read(READ_SIZE), mime=True)
+        # with magic.Magic(flags=magic.MAGIC_MIME_TYPE) as m:
+        #     detected_type = m.id_buffer(fileobj.read(READ_SIZE)) # magic.from_buffer(fileobj.read(READ_SIZE), mime=True)
+        detected_type = magic.detect_from_content(fileobj.read(READ_SIZE)).mime_type
         root, extension = os.path.splitext(fileobj.name.lower())
 
         # seek back to start so a valid file could be read
