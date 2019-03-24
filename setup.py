@@ -9,7 +9,7 @@ from wagtailstreamforms import __version__
 
 install_requires = [
     'wagtail>=2,<2.4',
-    'filemagic',
+    'file-magic',
 ]
 
 documentation_extras = [
