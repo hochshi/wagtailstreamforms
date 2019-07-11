@@ -161,7 +161,7 @@ class BaseField:
                     options.update({'validators': validations})
                     widget_attrs.update({
                         'pattern': validation['regex'],
-                        'error_message': validation['msg']
+                        'data-parsley-pattern-message': validation['msg']
                     })
         except TypeError as e:
             logger.error('validation_list is none, %s'.format(e))
