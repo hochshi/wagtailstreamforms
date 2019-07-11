@@ -160,7 +160,8 @@ class BaseField:
                     validations.append(regex_validator)
                     options.update({'validators': validations})
                     widget_attrs.update({
-                        'pattern': validation['regex']
+                        'pattern': validation['regex'],
+                        'error_message': validation['msg']
                     })
         except TypeError as e:
             logger.error('validation_list is none, %s'.format(e))
