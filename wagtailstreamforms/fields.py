@@ -18,7 +18,7 @@ _fields = {}
 _searched_for_fields = False
 
 field_name_validator = validators.RegexValidator(
-    r'^[0-9a-zA-Z\-]+$',
+    r'^[0-9a-z\-_]+$',
     'Only alphanumeric and dash (-) characters are allowed.'
 )
 
