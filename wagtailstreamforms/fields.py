@@ -17,8 +17,13 @@ logger = logging.getLogger(__name__)
 _fields = {}
 _searched_for_fields = False
 
+field_name_validator = validators.RegexValidator(
+    r'^[0-9a-zA-Z\-]+$',
+    'Only alphanumeric and dash (-) characters are allowed.'
+)
+
 FIELD_FORM_BLOCK = [
-            ('name', blocks.CharBlock()),
+            ('name', blocks.CharBlock(validators=[field_name_validator])),
             ('command_line_option', blocks.BooleanBlock(required=False)),
             ('label', blocks.CharBlock()),
             ('help_text', blocks.CharBlock(required=False)),
@@ -33,7 +38,7 @@ FIELD_FORM_BLOCK = [
         ]
 
 FILE_FORM_BLOCK = [
-            ('name', blocks.CharBlock()),
+            ('name', blocks.CharBlock(validators=[field_name_validator])),
             ('command_line_option', blocks.BooleanBlock(required=False)),
             ('label', blocks.CharBlock()),
             ('help_text', blocks.CharBlock(required=False)),
