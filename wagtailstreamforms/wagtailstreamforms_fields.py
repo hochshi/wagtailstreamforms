@@ -248,7 +248,7 @@ class SingleFileField(BaseField):
             f_val.append(validators.FileSizeValidator(max_size))
         if validate_content_type:
             f_val.append(validators.FileTypeValidator(allowed_types=['text/plain']))
-        if validate_file_extension:
+        if validate_file_extension and ''.join(validate_file_extension):
             f_val.append(validators.FileTypeValidator(allowed_extensions=validate_file_extension))
         options['validators'] = f_val
         return options

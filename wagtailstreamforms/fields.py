@@ -149,7 +149,9 @@ class BaseField:
         field = self.field_class(**options)
 
         field.clo = block_value.get('command_line_option', False)
-        field.tooltip = block_value.get('tooltip', None)
+        tooltip = block_value.get('tooltip', False)
+        if tooltip:
+            field.tooltip = tooltip
         return field
 
     def get_options(self, block_value):
