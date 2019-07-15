@@ -111,7 +111,26 @@ class NumberField(BaseField):
             ('help_text', blocks.CharBlock(required=False)),
             ('required', blocks.BooleanBlock(required=False)),
             ('default_value', blocks.CharBlock(required=False, help_text='Input must match the following regex')),
+            ('validation', blocks.StructBlock([
+                ('minimum', blocks.StructBlock([
+                    ('value', blocks.DecimalBlock(required=False)),
+                    ('error_message', blocks.CharBlock(required=False)),
+                ])),
+                ('maximum', blocks.StructBlock([
+                    ('value', blocks.DecimalBlock(required=False)),
+                    ('error_message', blocks.CharBlock(required=False)),
+                ])),
+            ]))
         ], icon=self.icon, label=self.label)
+    
+    def get_pattern(self, block_value):
+        validation_list = block_value.get('validation', None)
+        if validation_list:
+            return [{
+                key: validation_list[key].get('value', None),
+                'msg': validation_list[key].get('error_message', None)
+            } for key in validation_list]
+        return []
 
 
 @register('dropdown')
@@ -223,11 +242,13 @@ class SingleFileField(BaseField):
         options = super(SingleFileField, self).get_options(block_value)
         max_size = block_value.get('max_size', 0)
         validate_content_type = block_value.get('validate_content_is_text', False)
+        validate_file_extension = block_value.get('allowed_file_extensions', False)
         f_val = []
         if max_size > 0:
             f_val.append(validators.FileSizeValidator(max_size))
         if validate_content_type:
-            f_val.append((validators.FileTypeValidator(allowed_types=['text/plain'])))
+            f_val.append(validators.FileTypeValidator(allowed_types=['text/plain']))
+        if validate_file_extension:
+            f_val.append(validators.FileTypeValidator(allowed_extensions=validate_file_extension))
         options['validators'] = f_val
-
         return options

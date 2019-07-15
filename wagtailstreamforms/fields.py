@@ -19,35 +19,49 @@ _searched_for_fields = False
 
 field_name_validator = validators.RegexValidator(
     r'^[0-9a-z\-_]+$',
-    'Only alphanumeric and dash (-) characters are allowed.'
+    message='Only alphanumeric and dash (-) characters are allowed.'
+)
+
+file_extension_validator = validators.RegexValidator(
+    regex=r'^\.[a-z0-9]+$',
+    message='Must begin with a (.) and only small letter and numbers are allowed after the (.)'
 )
 
 FIELD_FORM_BLOCK = [
-            ('name', blocks.CharBlock(validators=[field_name_validator])),
-            ('command_line_option', blocks.BooleanBlock(required=False)),
-            ('label', blocks.CharBlock()),
-            ('help_text', blocks.CharBlock(required=False)),
-            ('tooltip', blocks.RichTextBlock(required=False)),
-            ('required', blocks.BooleanBlock(required=False)),
-            ('default_value', blocks.CharBlock(required=False)),
-            ('validation', blocks.ListBlock(
-                blocks.StructBlock([
-                    ('regex', blocks.CharBlock(required=False)),
-                    ('error_message', blocks.CharBlock(required=False)),
-                ])
-            )),
-        ]
+    ('name', blocks.CharBlock(validators=[field_name_validator])),
+    ('command_line_option', blocks.BooleanBlock(required=False)),
+    ('label', blocks.CharBlock()),
+    ('help_text', blocks.CharBlock(required=False)),
+    ('tooltip', blocks.RichTextBlock(required=False)),
+    ('required', blocks.BooleanBlock(required=False)),
+    ('default_value', blocks.CharBlock(required=False)),
+    ('validation', blocks.ListBlock(
+        blocks.StructBlock([
+            ('regex', blocks.CharBlock(required=False)),
+            ('error_message', blocks.CharBlock(required=False)),
+        ])
+    )),
+]
 
 FILE_FORM_BLOCK = [
-            ('name', blocks.CharBlock(validators=[field_name_validator])),
-            ('command_line_option', blocks.BooleanBlock(required=False)),
-            ('label', blocks.CharBlock()),
-            ('help_text', blocks.CharBlock(required=False)),
-            ('tooltip', blocks.RichTextBlock(required=False)),
-            ('required', blocks.BooleanBlock(required=False)),
-            ('max_size', blocks.FloatBlock(required=False, help_text='Maximum file size in MiB (mega bytes)')),
-            ('validate_content_is_text', blocks.BooleanBlock(required=False)),
-        ]
+    ('name', blocks.CharBlock(validators=[field_name_validator])),
+    ('command_line_option', blocks.BooleanBlock(required=False)),
+    ('label', blocks.CharBlock()),
+    ('help_text', blocks.CharBlock(required=False)),
+    ('tooltip', blocks.RichTextBlock(required=False)),
+    ('required', blocks.BooleanBlock(required=False)),
+    ('max_size', blocks.FloatBlock(
+        required=False,
+        help_text='Maximum file size in MiB (mega bytes)')),
+    ('validate_content_is_text', blocks.BooleanBlock(required=False)),
+    ('allowed_file_extensions', blocks.ListBlock(
+        blocks.CharBlock(
+            required=False,
+            label='extension',
+            validators=(file_extension_validator,)
+        )
+    ))
+]
 
 
 def register(field_name, cls=None):
@@ -163,7 +177,7 @@ class BaseField:
         validations = []
         try:
             for validation in validation_list:
-                if validation['regex']:
+                if validation.get('regex', False):
                     regex_validator = validators.RegexValidator(regex=validation['regex'], message=validation['msg'])
                     validations.append(regex_validator)
                     options.update({'validators': validations})
@@ -171,8 +185,22 @@ class BaseField:
                         'pattern': validation['regex'],
                         'data-parsley-pattern-message': validation['msg']
                     })
-        except TypeError as e:
-            logger.error('validation_list is none, %s'.format(e))
+                elif validation.get('minimum', False):
+                    min_validator = validators.MinValueValidator(validation['minimum'], message=validation['msg'])
+                    validations.append(min_validator)
+                    widget_attrs.update({
+                        'min': validation['minimum'],
+                        'data-parsley-min-message': validation['msg']
+                    })
+                elif validation.get('maximum', False):
+                    max_validator = validators.MaxValueValidator(validation['maximum'], message=validation['msg'])
+                    validations.append(max_validator)
+                    widget_attrs.update({
+                        'max': validation['maximum'],
+                        'data-parsley-max-message': validation['msg']
+                    })
+        except TypeError as identifier:
+            logger.error('validation_list is none, %s', identifier)
 
         options['widget'] = widget(attrs=widget_attrs)
 
