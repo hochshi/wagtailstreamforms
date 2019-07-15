@@ -26,8 +26,9 @@ class FileTypeValidator(object):
 
     extension_message = "File extension {} is not allowed. Allowed extensions are: {}."
 
-    def __init__(self, allowed_types=(), allowed_extensions=()):
+    def __init__(self, allowed_types=(), allowed_filenames=(), allowed_extensions=()):
         self.allowed_mimes = allowed_types
+        self.allowed_filenames = allowed_filenames
         self.allowed_exts = allowed_extensions
 
     def __call__(self, fileobj):
@@ -52,12 +53,21 @@ class FileTypeValidator(object):
                     message=self.type_message.format(detected_type),
                     code='invalid_type'
                 )
-        _, extension = os.path.splitext(fileobj.name.lower())
+        filename, extension = os.path.splitext(fileobj.name.lower())
         if self.allowed_exts and (extension not in self.allowed_exts):
             raise ValidationError(
                 message=self.extension_message.format(extension, ', '.join(self.allowed_exts)),
                 code='invalid_extension'
             )
+
+        for validator in self.allowed_filenames:
+            try:
+                validator(filename)
+            except ValidationError as identifier:
+                raise ValidationError(
+                    message=identifier.message,
+                    code='invalid_name',
+                )
 
     def check_word_or_excel(self, fileobj, detected_type, extension):
         """

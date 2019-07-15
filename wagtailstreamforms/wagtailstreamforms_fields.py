@@ -2,6 +2,7 @@ from django import forms
 from django.utils.translation import ugettext_lazy as _
 from wagtail.core import blocks
 from wagtailstreamforms import validators
+from django.core.validators import RegexValidator
 
 from wagtailstreamforms.fields import BaseField, register, FIELD_FORM_BLOCK, FILE_FORM_BLOCK
 from wagtail.core.utils import resolve_model_string
@@ -243,12 +244,30 @@ class SingleFileField(BaseField):
         max_size = block_value.get('max_size', 0)
         validate_content_type = block_value.get('validate_content_is_text', False)
         validate_file_extension = block_value.get('allowed_file_extensions', False)
+        allowed_types, allowed_filenames, allowed_extensions = ((), (), ())
         f_val = []
         if max_size > 0:
             f_val.append(validators.FileSizeValidator(max_size))
         if validate_content_type:
-            f_val.append(validators.FileTypeValidator(allowed_types=['text/plain']))
+            allowed_types = ['text/plain']
         if validate_file_extension and ''.join(validate_file_extension):
-            f_val.append(validators.FileTypeValidator(allowed_extensions=validate_file_extension))
+            allowed_extensions = validate_file_extension
+        allowed_filenames = self.get_file_name_patterns(block_value)
+        f_val.append(
+            validators.FileTypeValidator(
+                allowed_types=allowed_types,
+                allowed_filenames=allowed_filenames,
+                allowed_extensions=allowed_extensions
+            )
+        )
         options['validators'] = f_val
         return options
+
+    def get_file_name_patterns(self, block_value):
+        validation_list = block_value.get('validate_file_name', None)
+        if validation_list:
+            return [RegexValidator(
+                regex=validation.get('regex', None),
+                message=validation.get('error_message', None),
+            ) for validation in validation_list]
+        return []

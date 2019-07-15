@@ -54,6 +54,12 @@ FILE_FORM_BLOCK = [
         required=False,
         help_text='Maximum file size in MiB (mega bytes)')),
     ('validate_content_is_text', blocks.BooleanBlock(required=False)),
+    ('validate_file_name', blocks.ListBlock(
+        blocks.StructBlock([
+            ('regex', blocks.CharBlock(required=False)),
+            ('error_message', blocks.CharBlock(required=False)),
+        ])
+    )),
     ('allowed_file_extensions', blocks.ListBlock(
         blocks.CharBlock(
             required=False,
