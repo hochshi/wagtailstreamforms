@@ -27,6 +27,7 @@ FIELD_FORM_BLOCK = [
             ('command_line_option', blocks.BooleanBlock(required=False)),
             ('label', blocks.CharBlock()),
             ('help_text', blocks.CharBlock(required=False)),
+            ('tooltip', blocks.RichTextBlock(required=False)),
             ('required', blocks.BooleanBlock(required=False)),
             ('default_value', blocks.CharBlock(required=False)),
             ('validation', blocks.ListBlock(
@@ -42,6 +43,7 @@ FILE_FORM_BLOCK = [
             ('command_line_option', blocks.BooleanBlock(required=False)),
             ('label', blocks.CharBlock()),
             ('help_text', blocks.CharBlock(required=False)),
+            ('tooltip', blocks.RichTextBlock(required=False)),
             ('required', blocks.BooleanBlock(required=False)),
             ('max_size', blocks.FloatBlock(required=False, help_text='Maximum file size in MiB (mega bytes)')),
             ('validate_content_is_text', blocks.BooleanBlock(required=False)),
@@ -133,6 +135,7 @@ class BaseField:
         field = self.field_class(**options)
 
         field.clo = block_value.get('command_line_option', False)
+        field.tooltip = block_value.get('tooltip', None)
         return field
 
     def get_options(self, block_value):
