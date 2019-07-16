@@ -110,6 +110,7 @@ class NumberField(BaseField):
             ('command_line_option', blocks.BooleanBlock(required=False)),
             ('label', blocks.CharBlock()),
             ('help_text', blocks.CharBlock(required=False)),
+            ('tooltip', blocks.RichTextBlock(required=False)),
             ('required', blocks.BooleanBlock(required=False)),
             ('default_value', blocks.CharBlock(required=False, help_text='Input must match the following regex')),
             ('validation', blocks.StructBlock([
