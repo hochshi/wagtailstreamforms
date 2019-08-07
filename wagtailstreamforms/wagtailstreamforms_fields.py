@@ -6,6 +6,7 @@ from django.core.validators import RegexValidator
 
 from wagtailstreamforms.fields import BaseField, register, FIELD_FORM_BLOCK, FILE_FORM_BLOCK
 from wagtail.core.utils import resolve_model_string
+from captcha.fields import ReCaptchaField
 
 
 @register('singleline')
@@ -272,3 +273,10 @@ class SingleFileField(BaseField):
                 message=validation.get('error_message', None),
             ) for validation in validation_list]
         return []
+
+
+@register('captcha')
+class CaptchaField(BaseField):
+    field_class = ReCaptchaField
+    icon = 'repeat'
+    label = _('Captcha field')
