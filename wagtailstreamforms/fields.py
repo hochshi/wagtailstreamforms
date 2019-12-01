@@ -12,19 +12,17 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-
-
 _fields = {}
 _searched_for_fields = False
 
 field_name_validator = validators.RegexValidator(
     r'^[0-9a-z\-_]+$',
-    message='Only alphanumeric and dash (-) characters are allowed.'
-)
+    message='Only alphanumeric and dash (-) characters are allowed.')
 
 file_extension_validator = validators.RegexValidator(
     regex=r'^\.[a-z0-9]+$',
-    message='Must begin with a (.) and only small letter and numbers are allowed after the (.)'
+    message=
+    'Must begin with a (.) and only small letter and numbers are allowed after the (.)'
 )
 
 FIELD_FORM_BLOCK = [
@@ -35,12 +33,13 @@ FIELD_FORM_BLOCK = [
     ('tooltip', blocks.RichTextBlock(required=False)),
     ('required', blocks.BooleanBlock(required=False)),
     ('default_value', blocks.CharBlock(required=False)),
-    ('validation', blocks.ListBlock(
-        blocks.StructBlock([
-            ('regex', blocks.CharBlock(required=False)),
-            ('error_message', blocks.CharBlock(required=False)),
-        ])
-    )),
+    ('placeholder', blocks.CharBlock(required=False)),
+    ('validation',
+     blocks.ListBlock(
+         blocks.StructBlock([
+             ('regex', blocks.CharBlock(required=False)),
+             ('error_message', blocks.CharBlock(required=False)),
+         ]))),
 ]
 
 FILE_FORM_BLOCK = [
@@ -50,23 +49,21 @@ FILE_FORM_BLOCK = [
     ('help_text', blocks.CharBlock(required=False)),
     ('tooltip', blocks.RichTextBlock(required=False)),
     ('required', blocks.BooleanBlock(required=False)),
-    ('max_size', blocks.FloatBlock(
-        required=False,
-        help_text='Maximum file size in MiB (mega bytes)')),
+    ('max_size',
+     blocks.FloatBlock(required=False,
+                       help_text='Maximum file size in MiB (mega bytes)')),
     ('validate_content_is_text', blocks.BooleanBlock(required=False)),
-    ('validate_file_name', blocks.ListBlock(
-        blocks.StructBlock([
-            ('regex', blocks.CharBlock(required=False)),
-            ('error_message', blocks.CharBlock(required=False)),
-        ])
-    )),
-    ('allowed_file_extensions', blocks.ListBlock(
-        blocks.CharBlock(
-            required=False,
-            label='extension',
-            validators=(file_extension_validator,)
-        )
-    ))
+    ('validate_file_name',
+     blocks.ListBlock(
+         blocks.StructBlock([
+             ('regex', blocks.CharBlock(required=False)),
+             ('error_message', blocks.CharBlock(required=False)),
+         ]))),
+    ('allowed_file_extensions',
+     blocks.ListBlock(
+         blocks.CharBlock(required=False,
+                          label='extension',
+                          validators=(file_extension_validator, ))))
 ]
 
 
@@ -83,9 +80,11 @@ def register(field_name, cls=None):
     """
 
     if cls is None:
+
         def decorator(cls):
             register(field_name, cls)
             return cls
+
         return decorator
 
     _fields[field_name] = cls
@@ -186,30 +185,42 @@ class BaseField:
         try:
             for validation in validation_list:
                 if validation.get('regex', False):
-                    regex_validator = validators.RegexValidator(regex=validation['regex'], message=validation['msg'])
+                    regex_validator = validators.RegexValidator(
+                        regex=validation['regex'], message=validation['msg'])
                     validations.append(regex_validator)
                     options.update({'validators': validations})
                     widget_attrs.update({
-                        'pattern': validation['regex'],
-                        'data-parsley-pattern-message': validation['msg']
+                        'pattern':
+                        validation['regex'],
+                        'data-parsley-pattern-message':
+                        validation['msg']
                     })
                 elif validation.get('minimum', False):
-                    min_validator = validators.MinValueValidator(validation['minimum'], message=validation['msg'])
+                    min_validator = validators.MinValueValidator(
+                        validation['minimum'], message=validation['msg'])
                     validations.append(min_validator)
                     widget_attrs.update({
-                        'min': validation['minimum'],
-                        'data-parsley-min-message': validation['msg']
+                        'min':
+                        validation['minimum'],
+                        'data-parsley-min-message':
+                        validation['msg']
                     })
                 elif validation.get('maximum', False):
-                    max_validator = validators.MaxValueValidator(validation['maximum'], message=validation['msg'])
+                    max_validator = validators.MaxValueValidator(
+                        validation['maximum'], message=validation['msg'])
                     validations.append(max_validator)
                     widget_attrs.update({
-                        'max': validation['maximum'],
-                        'data-parsley-max-message': validation['msg']
+                        'max':
+                        validation['maximum'],
+                        'data-parsley-max-message':
+                        validation['msg']
                     })
         except TypeError as identifier:
             logger.error('validation_list is none, %s', identifier)
 
+        placeholder = block_value.get('placeholder')
+        if placeholder:
+            widget_attrs['placeholder'] = placeholder
         options['widget'] = widget(attrs=widget_attrs)
 
         return options
@@ -230,7 +241,9 @@ class BaseField:
 
         :return: The ``wagtail.core.blocks.StructBlock`` to be used in the StreamField
         """
-        return blocks.StructBlock(FIELD_FORM_BLOCK, icon=self.icon, label=self.label)
+        return blocks.StructBlock(FIELD_FORM_BLOCK,
+                                  icon=self.icon,
+                                  label=self.label)
 
 
 class HookMultiSelectFormField(forms.MultipleChoiceField):
@@ -238,12 +251,9 @@ class HookMultiSelectFormField(forms.MultipleChoiceField):
 
 
 class HookSelectField(models.Field):
-
     def get_choices_default(self):
-        return [
-            (fn.__name__, capfirst(fn.__name__.replace('_', ' ')))
-            for fn in hooks.get_hooks('process_form_submission')
-        ]
+        return [(fn.__name__, capfirst(fn.__name__.replace('_', ' ')))
+                for fn in hooks.get_hooks('process_form_submission')]
 
     def get_db_prep_value(self, value, connection=None, prepared=False):
         if isinstance(value, str):
@@ -278,5 +288,6 @@ class HookSelectField(models.Field):
         arr_choices = [v for v, s in self.get_choices_default()]
         for opt in value:
             if opt not in arr_choices:
-                raise exceptions.ValidationError('%s is not a valid choice' % opt)
+                raise exceptions.ValidationError('%s is not a valid choice' %
+                                                 opt)
         return
