@@ -38,8 +38,38 @@ class DomainWhiteListSettings(BaseSetting):
     def load(cls):
         obj, created = cls.objects.get_or_create(pk=1)
         return obj
-        # if not DomainWhiteListSettings.__instance:
-        #     obj, created = cls.objects.get_or_create(pk=1)
-        #     DomainWhiteListSettings.__instance = obj
-        # return DomainWhiteListSettings.__instance
 
+
+@register_setting(icon='fa-ban')
+class DomainBlackListSettings(BaseSetting):
+    """
+    Domain Black list.
+    """
+
+    # __instance = None
+
+    class Meta:
+        verbose_name = _('Email black list')
+
+    domain_black_list = models.TextField(
+        blank=True,
+        verbose_name=_('Domain Black List'),
+        help_text=_('Disallowed email domains'),
+    )
+
+    panels = [
+        FieldPanel('domain_black_list')
+    ]
+
+    @property
+    def list_domains(self):
+        return self.domain_black_list.splitlines(keepends=False)
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super(DomainBlackListSettings, self).save(*args, **kwargs)
+
+    @classmethod
+    def load(cls):
+        obj, created = cls.objects.get_or_create(pk=1)
+        return obj

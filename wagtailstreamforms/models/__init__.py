@@ -2,4 +2,4 @@ from .abstract import AbstractFormSetting
 from .file import FormSubmissionFile
 from .form import Form
 from .submission import FormSubmission
-from .settings import DomainWhiteListSettings
+from .settings import DomainWhiteListSettings, DomainBlackListSettings

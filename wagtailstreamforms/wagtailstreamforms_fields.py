@@ -56,19 +56,21 @@ class EmailField(BaseField):
 
         options = self.get_options(block_value)
 
-        if self.is_white_list_enabled(block_value):
+        if self.is_domain_filter(block_value):
             white_list = self.get_white_list().load().list_domains
-            email_validator = validators.EmailDomainWhiteListValidator(whitelist=white_list)
+            white_list_validator = validators.EmailDomainWhiteListValidator(whitelist=white_list)
             try:
-                options['validators'].append(email_validator)
+                options['validators'].append(white_list_validator)
             except KeyError as e:
-                options.update({'validators': [email_validator]})
+                options.update({'validators': [white_list_validator]})
+            black_list = self.get_black_list().load().list_domains
+            black_list_validator = validators.EmailDomainBlackListValidator(blacklist=black_list)
+            options['validators'].append(black_list_validator)
         field = self.field_class(**options)
         field.clo = block_value.get('command_line_option', False)
         return field
 
-
-    def is_white_list_enabled(self, block_value):
+    def is_domain_filter(self, block_value):
         return block_value.get('filter_domains')
 
 
@@ -80,11 +82,14 @@ class EmailField(BaseField):
         :return: The ``wagtail.core.blocks.StructBlock`` to be used in the StreamField
         """
         return blocks.StructBlock(FIELD_FORM_BLOCK + [
-            ('filter_domains', blocks.BooleanBlock(required=False, help_text='Allow only white list email domains')),
+            ('filter_domains', blocks.BooleanBlock(required=False, help_text='Allow only white list email domains. Block black list domains.')),
         ], icon=self.icon, label=self.label)
 
     def get_white_list(self):
         return resolve_model_string('wagtailstreamforms.DomainWhiteListSettings')
+    
+    def get_black_list(self):
+        return resolve_model_string('wagtailstreamforms.DomainBlackListSettings')
 
 
 @register('url')
