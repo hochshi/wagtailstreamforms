@@ -38,7 +38,7 @@ def save_form_submission_data(instance, form):
             )
 
 
-@register('notify_of_form_submission')
+@register('process_form_submission')
 def notify_of_form_submission(instance, form):
     """ notify admins and moderators of form submission"""
     send_mail(
