@@ -1,6 +1,7 @@
 from string import punctuation
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
+from wagtail.core.sites import  get_site_for_hostname
 from wagtail.admin.edit_handlers import FieldPanel
 from wagtail.contrib.settings.models import BaseSetting, register_setting
 
@@ -37,8 +38,10 @@ class DomainWhiteListSettings(BaseSetting):
 
     @classmethod
     def load(cls):
-        obj, created = cls.objects.get_or_create()
-        return obj
+        site = get_site_for_hostname('', 80)
+        return cls.for_site(site)
+        # obj, created = cls.objects.get_or_create()
+        # return obj
 
 
 @register_setting(icon='fa-ban')
@@ -73,5 +76,7 @@ class DomainBlackListSettings(BaseSetting):
 
     @classmethod
     def load(cls):
-        obj, created = cls.objects.get_or_create()
-        return obj
+        site = get_site_for_hostname('', 80)
+        return cls.for_site(site)
+        # obj, created = cls.objects.get_or_create()
+        # return obj
