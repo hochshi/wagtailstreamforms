@@ -44,6 +44,6 @@ def notify_of_form_submission(instance, form):
     send_mail(
         subject='New form submission %s' % instance.title,
         message='There has been a new submission of form %s' % instance.title,
-        recipient_list=settings.MANAGERS,
+        recipient_list=[to[1] for to in settings.MANAGERS],
     )
 
