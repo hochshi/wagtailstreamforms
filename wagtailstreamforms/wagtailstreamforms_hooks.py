@@ -6,6 +6,9 @@ from wagtailstreamforms.hooks import register
 from wagtailstreamforms.models import FormSubmissionFile
 from wagtailstreamforms.serializers import FormSubmissionSerializer
 
+from wagtail.admin.utils import send_mail
+from django.conf import settings
+
 
 @register('process_form_submission')
 def save_form_submission_data(instance, form):
@@ -20,7 +23,7 @@ def save_form_submission_data(instance, form):
         submission_data[field] = '{} file{}'.format(count, pluralize(count))
 
     # save the submission data
-    submission = instance.get_submission_class().objects.create(
+    submission = instance.get_submission_class().objects.get_or_create(
         form_data=json.dumps(submission_data, cls=FormSubmissionSerializer),
         form=instance
     )
@@ -33,3 +36,14 @@ def save_form_submission_data(instance, form):
                 field=field,
                 file=file
             )
+
+
+@register('notify_of_form_submission')
+def notify_of_form_submission(instance, form):
+    """ notify admins and moderators of form submission"""
+    send_mail(
+        subject='New form submission %s' % form.title,
+        message='',
+        recipient_list=settings.MANAGERS,
+    )
+
