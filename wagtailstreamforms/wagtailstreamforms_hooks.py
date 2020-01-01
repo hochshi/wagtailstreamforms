@@ -42,7 +42,7 @@ def save_form_submission_data(instance, form):
 def notify_of_form_submission(instance, form):
     """ notify admins and moderators of form submission"""
     send_mail(
-        subject='New form submission %s' % form.title,
+        subject='New form submission %s' % instance.title,
         message='',
         recipient_list=settings.MANAGERS,
     )
