@@ -13,6 +13,8 @@ class DomainWhiteListSettings(BaseSetting):
 
     # __instance = None
 
+    _pk = 0
+
     class Meta:
         verbose_name = _('Email White list')
 
@@ -31,12 +33,11 @@ class DomainWhiteListSettings(BaseSetting):
         return self.domain_white_list.splitlines(keepends=False)
 
     def save(self, *args, **kwargs):
-        self.pk = 1
         super(DomainWhiteListSettings, self).save(*args, **kwargs)
 
     @classmethod
     def load(cls):
-        obj, created = cls.objects.get_or_create(pk=1)
+        obj, created = cls.objects.get_or_create()
         return obj
 
 
@@ -47,6 +48,8 @@ class DomainBlackListSettings(BaseSetting):
     """
 
     # __instance = None
+
+    _pk = 1
 
     class Meta:
         verbose_name = _('Email black list')
@@ -66,10 +69,9 @@ class DomainBlackListSettings(BaseSetting):
         return self.domain_black_list.splitlines(keepends=False)
 
     def save(self, *args, **kwargs):
-        self.pk = 1
         super(DomainBlackListSettings, self).save(*args, **kwargs)
 
     @classmethod
     def load(cls):
-        obj, created = cls.objects.get_or_create(pk=1)
+        obj, created = cls.objects.get_or_create()
         return obj
